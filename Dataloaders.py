@@ -21,10 +21,8 @@ class SegmentationDataset(Dataset):
         img_path = os.path.join(self.image_dir, self.images[index])
         mask_path = os.path.join(self.mask_dir, self.images[index])
         image = cv2.resize(cv2.cvtColor(cv2.imread(img_path), cv2.COLOR_BGR2RGB), self.shape)
-        mask = cv2.resize(cv2.cvtColor(cv2.imread(mask_path), cv2.COLOR_BGR2RGB), self.shape)
-        mask[mask == 255] = 1
-        mask = mask[:, :, 0]
-         
+        mask = cv2.resize(cv2.cvtColor(cv2.imread(mask_path), cv2.COLOR_BGR2GRAY), self.shape)
+        mask[mask>0] = 1
         if self.transform is not None:
             augmentations = self.transform(image=image, mask=mask)
             image = augmentations["image"]
@@ -76,7 +74,7 @@ class UDASegmentationDataset(Dataset):
 
 
 supervised_train_transform = A.Compose([
-    A.Rotate(limit=45, p = 0.7, border_mode=1),
+    A.Rotate(limit=30, p = 0.7, border_mode=1),
     A.RandomBrightnessContrast(p=0.2),
     A.Normalize (mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p = 1.0), 
     ToTensorV2()
@@ -88,7 +86,7 @@ test_transform = A.Compose([
 ])
 
 
-uda_train_transform,_ = randAugment(N=3, M=5, p=0.4, cut_out=True)
+uda_train_transform,_ = randAugment(N=3, M=5, p=0.4, cut_out=True, normalize=True, tensor=True)
 
 
 def supervised_loader(image_dir = "", mask_dir= "", transform=None, batch_size=8, shuffle=True, num_workers = 4, shape = (1280, 736)):
