@@ -3,3 +3,4 @@ env
 __pycache__
 test.py
 generated_unets
+tst.ipynb
