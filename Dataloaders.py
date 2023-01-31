@@ -70,7 +70,7 @@ class UDASegmentationDataset(Dataset):
             augmentations = self.transform(image=image)
             aug_image = augmentations["image"]
         if self.geometrical_transform is not None:
-            augmentations = self.transform(image=image, aug_image = aug_image)
+            augmentations = self.geometrical_transform(image=image, aug_image = aug_image)
             aug_image = augmentations["aug_image"]
             image = augmentations["image"]
 
@@ -91,7 +91,7 @@ test_transform = A.Compose([
 ])
 
 
-uda_train_transform,_ = randAugment(N=3, M=5, p=0.4, cut_out=True, normalize=False, tensor=False)
+uda_train_transform,_ = randAugment(N=3, M=5, p=0.4, cut_out=False, normalize=False, tensor=False)
 
 geometrical_transform = A.Compose([
     A.ShiftScaleRotate(shift_limit_x=30, rotate_limit=0,   shift_limit_y=0, shift_limit=30, p=0.3, border_mode=1),
