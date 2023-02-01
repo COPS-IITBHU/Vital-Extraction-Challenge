@@ -1,7 +1,7 @@
-import unet_pred
-import correct_perspective
-import detector
-import trocr
+from  pipeline import segmentation
+from pipeline import correct_perspective
+from pipeline import text_detection
+from pipeline import OCR
 import os
 import cv2
 
@@ -10,15 +10,15 @@ imlis = os.listdir(TEST_IMG_DIR)
 imloc = f"{TEST_IMG_DIR}/{imlis[20]}"
 
 data = cv2.imread(imloc)
-mask = unet_pred.maskPred(imloc)
+mask = segmentation.maskPred(imloc)
 
 monitor =  correct_perspective.correctPerspective(data, mask)
 
 cv2.imshow("im", monitor)
 cv2.waitKey(0)
 
-bounding_boxes = detector.boundingBoxes(monitor)
+bounding_boxes = text_detection.boundingBoxes(monitor)
 
-text = trocr.trOCR(monitor, bounding_boxes)
+text = OCR.trOCR(monitor, bounding_boxes)
 
 print(text)
