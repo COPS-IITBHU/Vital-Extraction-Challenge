@@ -44,15 +44,18 @@ def correctPerspective(data, mask):
             approximations = cv2.approxPolyDP(cnt, epsilon, True)
             if len(approximations) == 4:
                 break
-        img = cv2.drawContours(data, [approximations], 0, (0, 255, 0), 2)
+        # img = cv2.drawContours(img, [approximations], 0, (0, 255, 0), 2)
         
-        h, w = 720, 1280
+        h, w = 320, 640
+        orig_h, orig_w, _ = data.shape
         
         pt1 = np.float32([approximations[0][0], approximations[1][0], approximations[2][0], approximations[3][0]])
         pt1 = order_points(pt1)
         pt2 = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
-
+        orig_pt = np.float32([[0, 0], [orig_w, 0], [orig_w, orig_h], [0, orig_h]])
         matrix = cv2.getPerspectiveTransform(pt1, pt2)
-        result = cv2.warpPerspective(data, matrix, (w, h))
+        orig_matrix = cv2.getPerspectiveTransform(pt1, orig_pt)
+        orig_op = cv2.warpPerspective(data, orig_matrix, (orig_w, orig_h))
+        shrink_op = cv2.warpPerspective(data, matrix, (w, h))
 
-        return result
+        return (orig_op, shrink_op)

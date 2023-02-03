@@ -23,15 +23,17 @@ IMAGE_WIDTH = 640
 
 def maskPred(img):
     model.eval()
-    img = cv2.resize(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), (IMAGE_WIDTH, IMAGE_HEIGHT))
-    augmentations = test_transform(image=img)
+    (orig_H, orig_W, _) = img.shape
+    img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT))
+    ## TRANSFORMING IMAGE
+    img = test_transform(image=img)["image"]
 
-    dat1 = augmentations["image"]
-
-    out1 = model(dat1.to(DEVICE).unsqueeze(0))
-
-    out1 = out1.squeeze()
-    return out1
+    ## RUNNING THROUGH MODEL
+    mask = model(img.to(DEVICE).unsqueeze(0))
+    mask = mask.cpu().squeeze()
+    ## RESIZING MASK
+    mask = cv2.resize(np.uint8(mask>0)*255, (orig_W, orig_H))
+    return mask
 
 
 if __name__ == "main":

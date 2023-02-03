@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from torchvision import datasets, models, transforms
 import torch.nn.functional as F
+from Dataloaders import test_transform
 
 
 class Classifier:
@@ -9,9 +10,6 @@ class Classifier:
         self.num_classes = num_classes
         self.model = None
         self.device = "cpu"#"cuda" if torch.cuda.is_available() else "cpu"
-        self.tensor = transforms.ToTensor()
-        self.norm = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-        
     
     def loadResnet18Classifier(self, chkpt_path):
         self.model = models.resnet18()
@@ -22,18 +20,20 @@ class Classifier:
         self.model.to(self.device)
         return
 
-    def predict(self, x):
-        model.eval()
-        fsize = list(x.size())
-        if len(fsize) == 3:
-            fsize = [1]+fsize
+    def predict(self, img):
+        self.model.eval()
+        img = test_transform(image=img)["image"]
         
-        x = self.tensor(x)
-        resize = transforms.Resize(fsize)
-        x = resize(x)
-        x = self.norm(x)
-        x = x.to(self.device)
-        outputs = self.model(x)
+        ## RUNNING THROUGH MODEL
+        img = img.to(self.device).unsqueeze(0)
+        outputs = self.model(img)
         _, preds = torch.max(F.softmax(outputs, dim = 1), 1)
 
-        return preds.numpy()[0]
+        return preds.cpu().numpy()[0]
+    
+def classification(img):
+    co = Classifier(4)
+    co.loadResnet18Classifier("weights/resnet18_weights")
+    return co.predict(img)
+    
+    
