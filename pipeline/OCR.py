@@ -3,7 +3,7 @@ import torch
 
 processor = TrOCRProcessor.from_pretrained('microsoft/trocr-large-printed')
 model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-printed')
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+DEVICE = "cpu"#"cuda" if torch.cuda.is_available() else "cpu"
 
 model = model.to(DEVICE)
 

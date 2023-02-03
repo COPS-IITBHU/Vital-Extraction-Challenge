@@ -7,8 +7,7 @@ from albumentations.pytorch import ToTensorV2
 from Dataloaders import test_transform
 import segmentation_models_pytorch as smp
 
-DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
-
+DEVICE = "cpu"#"cuda" if torch.cuda.is_available() else "cpu"
 model = smp.Unet(
     encoder_name="resnet34",        
     encoder_weights="imagenet",     
@@ -17,20 +16,14 @@ model = smp.Unet(
 )
 
 model = model.to(DEVICE)
-model.load_state_dict(torch.load("weights/unet_epoch_49.pt"))
+model.load_state_dict(torch.load("weights/unet.ckpt"))
 
-IMAGE_HEIGHT = 736
-IMAGE_WIDTH = 1280
+IMAGE_HEIGHT = 320
+IMAGE_WIDTH = 640
 
-test_transform = A.Compose([
-    A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
-    A.Normalize (mean=(0.485, 0.456, 0.406), std=(0.229, 0.224, 0.225), max_pixel_value=255.0, p = 1.0), 
-    ToTensorV2()
-])
-
-def maskPred(imgloc):
-    img = cv2.imread(imgloc)
-
+def maskPred(img):
+    model.eval()
+    img = cv2.resize(cv2.cvtColor(img, cv2.COLOR_BGR2RGB), (IMAGE_WIDTH, IMAGE_HEIGHT))
     augmentations = test_transform(image=img)
 
     dat1 = augmentations["image"]
@@ -38,9 +31,7 @@ def maskPred(imgloc):
     out1 = model(dat1.to(DEVICE).unsqueeze(0))
 
     out1 = out1.squeeze()
-    out1 = np.array(out1.detach().to("cpu"))
-    ret, thresh = cv2.threshold(out1, 0, 255, 0)
-    return thresh
+    return out1
 
 
 if __name__ == "main":

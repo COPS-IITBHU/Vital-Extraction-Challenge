@@ -8,7 +8,7 @@ class Classifier:
     def __init__(self, num_classes):
         self.num_classes = num_classes
         self.model = None
-        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.device = "cpu"#"cuda" if torch.cuda.is_available() else "cpu"
         self.tensor = transforms.ToTensor()
         self.norm = transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
         
@@ -23,6 +23,7 @@ class Classifier:
         return
 
     def predict(self, x):
+        model.eval()
         fsize = list(x.size())
         if len(fsize) == 3:
             fsize = [1]+fsize

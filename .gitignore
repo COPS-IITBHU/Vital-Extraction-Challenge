@@ -5,4 +5,5 @@ test.py
 generated_unets
 tst.ipynb
 .ipynb_checkpoints
+weights
 
