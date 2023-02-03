@@ -2,8 +2,6 @@ import numpy as np
 import torch
 import cv2
 import os
-import albumentations as A
-from albumentations.pytorch import ToTensorV2
 from Dataloaders import test_transform
 import segmentation_models_pytorch as smp
 

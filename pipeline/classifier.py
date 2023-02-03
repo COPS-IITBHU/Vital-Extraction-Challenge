@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision import datasets, models, transforms
+from torchvision import models
 import torch.nn.functional as F
 from Dataloaders import test_transform
 
