@@ -15,12 +15,12 @@ model = smp.Unet(
 
 model = model.to(DEVICE)
 model.load_state_dict(torch.load("weights/unet.ckpt"))
+model.eval()
 
 IMAGE_HEIGHT = 320
 IMAGE_WIDTH = 640
 
 def maskPred(img):
-    model.eval()
     (orig_H, orig_W, _) = img.shape
     img = cv2.resize(img, (IMAGE_WIDTH, IMAGE_HEIGHT))
     ## TRANSFORMING IMAGE

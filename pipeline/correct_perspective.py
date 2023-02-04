@@ -44,7 +44,7 @@ def correctPerspective(data, mask):
                 break
         # img = cv2.drawContours(img, [approximations], 0, (0, 255, 0), 2)
         
-        h, w = 320, 640
+        h, w = 360, 640
         orig_h, orig_w, _ = data.shape
         
         pt1 = np.float32([approximations[0][0], approximations[1][0], approximations[2][0], approximations[3][0]])

@@ -16,7 +16,7 @@ def get_boxes(image):
       text_threshold=0.7,
       link_threshold=0.4,
       low_text=0.4,
-      cuda=True,
-      long_size=1280
+      cuda=False,
+      long_size=640
   )
   return prediction_result['boxes']

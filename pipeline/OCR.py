@@ -1,26 +1,14 @@
-from transformers import TrOCRProcessor, VisionEncoderDecoderModel
-import torch
-
-processor = TrOCRProcessor.from_pretrained('microsoft/trocr-large-printed')
-model = VisionEncoderDecoderModel.from_pretrained('microsoft/trocr-large-printed')
+from paddleocr import PaddleOCR,draw_ocr
 DEVICE = "cpu"#"cuda" if torch.cuda.is_available() else "cpu"
 
-model = model.to(DEVICE)
+# Paddleocr supports Chinese, English, French, German, Korean and Japanese.
+# You can set the parameter `lang` as `ch`, `en`, `fr`, `german`, `korean`, `japan`
+# to switch the language model in order.
+ocr = PaddleOCR(lang='en', use_gpu=(DEVICE=="gpu"), det_db_box_thresh=0.6) # need to run only once to download and load model into memory
 
-def trOCR(img, locs):
-    x, y, w, h = locs[0], locs[1], locs[2], locs[3]
-
-    x *= img.shape[1]
-    w *= img.shape[1]
-    y *= img.shape[0]
-    h *= img.shape[0]
-
-    crop = img[int(y-h/2):int(y+h/2), int(x-w/2):int(x+w/2)]
-
-    pixel_values = processor(crop, return_tensors="pt").pixel_values
-    pixel_values = torch.tensor(pixel_values).to(DEVICE)
-    
-    generated_ids = model.generate(pixel_values)
-    generated_text2 = processor.batch_decode(generated_ids, skip_special_tokens=True)[0]
-
-    return generated_text2
+def get_text(crop_img, det=False):
+    return ocr.ocr(crop_img, det=det)
+    # for idx in range(len(result)):
+    #     res = result[idx]
+    #     for line in res:
+    #         print(line)
