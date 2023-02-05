@@ -45,15 +45,18 @@ def correctPerspective(data, mask):
         # img = cv2.drawContours(img, [approximations], 0, (0, 255, 0), 2)
         
         h, w = 360, 640
-        orig_h, orig_w, _ = data.shape
-        
+        orig_h, orig_w = 720,1280
+        h_, w_ = 180, 320
         pt1 = np.float32([approximations[0][0], approximations[1][0], approximations[2][0], approximations[3][0]])
         pt1 = order_points(pt1)
         pt2 = np.float32([[0, 0], [w, 0], [w, h], [0, h]])
         orig_pt = np.float32([[0, 0], [orig_w, 0], [orig_w, orig_h], [0, orig_h]])
+        es_pt = np.float32([[0, 0], [w_, 0], [w_, h_], [0, h_]])
         matrix = cv2.getPerspectiveTransform(pt1, pt2)
         orig_matrix = cv2.getPerspectiveTransform(pt1, orig_pt)
+        es_matrix = cv2.getPerspectiveTransform(pt1, es_pt)
         orig_op = cv2.warpPerspective(data, orig_matrix, (orig_w, orig_h))
         shrink_op = cv2.warpPerspective(data, matrix, (w, h))
+        es_op = cv2.warpPerspective(data, es_matrix, (w_, h_))
 
-        return (orig_op, shrink_op)
+        return (es_op, shrink_op, orig_op)

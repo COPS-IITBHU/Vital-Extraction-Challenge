@@ -18,10 +18,10 @@ class Classifier:
         checkpoint = torch.load(chkpt_path, map_location=self.device)
         self.model.load_state_dict(checkpoint["model_state_dict"])
         self.model.to(self.device)
+        self.model.eval()
         return
 
     def predict(self, img):
-        self.model.eval()
         img = test_transform(image=img)["image"]
         
         ## RUNNING THROUGH MODEL
@@ -30,10 +30,10 @@ class Classifier:
         _, preds = torch.max(F.softmax(outputs, dim = 1), 1)
 
         return preds.cpu().numpy()[0]
-    
+
+co = Classifier(4)
+co.loadResnet18Classifier("weights/resnet18_weights")    
 def classification(img):
-    co = Classifier(4)
-    co.loadResnet18Classifier("weights/resnet18_weights")
     return co.predict(img)
     
     
