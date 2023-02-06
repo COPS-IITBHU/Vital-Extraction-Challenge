@@ -14,7 +14,7 @@ model = smp.Unet(
 )
 
 model = model.to(DEVICE)
-model.load_state_dict(torch.load("weights/unet.ckpt"))
+model.load_state_dict(torch.load("weights/unet.ckpt", map_location=DEVICE))
 model.eval()
 
 IMAGE_HEIGHT = 320
