@@ -127,9 +127,6 @@ Inference code for this model is one liner simple and provided in the notebook a
 
 <h4>- Approch</h4>
 
-We used paddleocr, which is a fast, lightweight and open source detector+ocr model based on CRNN (Convolutional Recurrent Neural Network), we used it's fastest and recent version of PPOCR-v3, which runs considerably faster on cpu which achieving a good recognition accuracy.
-
-
 We used the input resolution dependent on the layout classification, For example layout which seems too crowded, we provided higher resolution of (360,640) and layout which have values apart we set their input ocr resolution to be (180, 320), our this trick helped in utilising layout information for achieving higher accuracy in extracting vitals
 
 Inference code for this model is one liner simple and provided in the notebook along with it's pip installation. It takes rougly 0.5-1 seconds for each inference on cpu. Higher time like 1 second usually accounts when we use layout of size (360, 640) otherwise till is generally less, and it also depends on the number of boxes detected by paddleocr, sometimes it detects more boxes so time goes on higher side like 1 seconds but generally it takes around 0.6-0.7 seconds in our pipeline.
