@@ -22,7 +22,7 @@ In this section, we will present the training setup and parameters for our Semi-
 
 We used a loss function as,  
 
-$ L = L_{s} + \lambda L_{u}$ 
+$L = L_{s} + \lambda L_{u}$ 
 
 whre **$\lambda$** is a hyperparameter adjusting both losses, $L_{s}$ is binary cross entropy supervised loss and $L_{u}$ is unsupervised consistency loss, we used KL divergence as a consistency loss, it helps in matching the mask similarity. Below is an image for Training procedure of SS Method.
 
@@ -136,20 +136,68 @@ For extracting vitals, we have used rule based method to rule out the boxes whic
 <!-- <May be figure> -->
 
 
+<h3> Vitals Detection</h3>
+
+<h4>- Approch</h4>
+
+Now, the next step is to detect the locations of the required vitals (HR, SBP, DBP, MAP, RR, HR_W) from the segmented and perspective corrected monitor. The bounding boxes for the all these vitals were given in the training dataset. Our first baseline approach was to take the union of all the bounding boxes for a particular class, then apply some rules. That was fast but the performance was not very good. So, we decided to use a deep learning model which gives bounding fast for multiple classes, is fast and can be trained on the given dataset. We tried a few transformer based models like CRAFT, FAST and DeepText-DETR. They gave good bounding but were too slow on GPU.
+So, finally to find the bounding boxes, we used **YOLOv5nano**. It is lightweight, has faster inference time and can be trained on our training dataset.
+
+<!-- YOLO models comparison figures -->
+Comparison of different YOLOv5 models:
+<p align="center">
+<img height = "300" width = "500" src ="yolo_model_plot.png" />
+</p>
 
 
+<!-- Figures of Comparison-->
+
+<h4>- Training Setup</h4>
+In this section, we will present the training setup and parameters for our YOLOv5nano.
+
+We used a loss function as,  
+
+```
+Loss = w_o * Loss_o + w_c * Loss_c + w_l * Loss_l + w_s * Loss_s
+```
+
+where:
+
+- Loss_o is the objectness loss,
+- Loss_c is the classification loss,
+- Loss_l is the localization loss,
+- Loss_s is the size loss,
+- 'w_o', 'w_c', 'w_l', 'w_s' are the weight coefficients that determine the relative importance of each loss.
 
 
+<!-- <Figure> -->
 
 
+*HYPERPARAMETERS:-*
+
+```
+LEARNING_RATES:
+    - 'lr0': (1, 1e-5, 1e-1),  # initial learning rate (SGD=1E-2, Adam=1E-3)
+    - 'lrf': (1, 0.01, 1.0),  # final OneCycleLR learning rate (lr0*lrf)
+BATCH_SIZE = 16
+MOMENTUM : (0.3, 0.6, 0.98),  # SGD momentum/Adam beta1
+WEIGHT_DECAY : (1, 0.0, 0.001),  # optimizer weight decay
+NUM_EPOCHS = 540
+IMAGE_HEIGHT = 320
+IMAGE_WIDTH = 640
+'box': (1, 0.02, 0.2),  # box loss gain
+'cls': (1, 0.2, 4.0),  # cls loss gain
+'cls_pw': (1, 0.5, 2.0),  # cls BCELoss positive_weight
+'obj': (1, 0.2, 4.0),  # obj loss gain (scale with pixels)
+'obj_pw': (1, 0.5, 2.0),  # obj BCELoss positive_weight
+'iou_t': (0, 0.1, 0.7),  # IoU training threshold
+'anchor_t': (1, 2.0, 8.0),  # anchor-multiple threshold
+'anchors': (2, 2.0, 10.0),  # anchors per output grid (0 to ignore)
+'fl_gamma': (0, 0.0, 2.0),  # focal loss gamma (efficientDet default gamma=1.5)
+```
 
 
-
-
-
-
-
-
-
+<h4>- Inference Setup</h4>
+Inference section is provided in the notebook itself. Preprocessing and normalization are done by the model itself. It takes rougly 50ms-100ms for each inference on cpu.
 
 
