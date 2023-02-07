@@ -1,5 +1,13 @@
 <h1 align="center">Report</h1>
 
+<h2>Abstract</h2>
+<p>Cloudphysician is a company that focuses on AI integration in the Healthcare system. In hospital the monitor shows vital informations that gives information about the patient. To integrate AI with the system we need to get the informations about the vitals from the monitor. In our approach we have processed the monitor images to extract the vital informations. We have used semi-supervised segmentation technique for extracting the monitor from complete image and then transformed the extracted monitor in birds-eye perspective. Finally we used yolov5-nano for vital extractions from monitor and paddle ocr as an open-source recognition tool. For increasing the vital extraction accuracy, we used some monitor layout knowledge for post-processing the predicted results. <b>Our complete pipline takes about 0.6-1.0 seconds for inference on cpu.</b>
+</p>
+
+<p>
+    <b>Along with the vital extraction, our pipeline is able to extract HR-Graph and able to digitize it with a good accuracy. From Visualisation point of view we provided a frontend built using gradio for viewing the results efficiently.</b>
+</p>
+
 This notebook presents the code for our Approach in tackling the problem statement given to us by CloudPhysician. Below is a figure depicting our pipleine from a higher level
 
 <!-- Figure here -->
@@ -11,11 +19,14 @@ This notebook presents the code for our Approach in tackling the problem stateme
 
 <h4>- Approch</h4>
 
-Our first task is to extract the monitor from a complete image, we have used segmentation based unet architecture as our backbone and initialized it with IMAGENET weights. Choice of using Segmentation is due to the fact that the monitors postions are not always rectangular so detection will not work that good instead pixel level work will do the thing. **we had 7000 unlabelled data, so we decided to combine it with 2000 labelled data and use a Semi-Supervised(SS) Semantic Segmentation Approach(Inspired from this paper [LINK](https://arxiv.org/pdf/1904.12848.pdf))**, their work were based on Image classification, we have modified their working for semantic segmentation of our case, Additionally, our novel additions like LR scheduler, augmentations variations(randAugment -  a type of novel augmentation technique - [LINK](https://medium.datadriveninvestor.com/why-randaugment-is-the-best-data-augmentation-approach-4a48f22b2152)) boost the quality of segmentation mask compared to supervised approach as it able to generalize well on cross-domain data. 
+Our first task is to extract the monitor from a complete image, we have used segmentation based unet architecture as our backbone and initialized it with IMAGENET weights. Choice of using Segmentation is due to the fact that the monitors postions are not always rectangular so detection will not work that good instead pixel level work will do the thing. **we had 7000 unlabelled data, so we decided to combine it with 2000 labelled data and use a Semi-Supervised(SS) Semantic Segmentation Approach(Inspired from this paper [LINK](https://arxiv.org/pdf/1904.12848.pdf))**, their work were based on Image classification, we have modified their working for semantic segmentation of our case, Additionally, our novel additions like LR scheduler, augmentations variations(randAugment -  a type of novel augmentation technique - [LINK](https://medium.datadriveninvestor.com/why-randaugment-is-the-best-data-augmentation-approach-4a48f22b2152)) boost the quality of segmentation mask compared to supervised approach as it able to generalize well on cross-domain data.
 
 Below are some images which shows the better mask generation of Semi-Supervised Approach in most scenarios where Supervised alone method is not working well.
 
 <!-- Figures of Comparison-->
+
+
+
 
 <h4>- Training Setup</h4>
 In this section, we will present the training setup and parameters for our Semi-Supervised Segmentation.
@@ -27,6 +38,8 @@ $L = L_{s} + \lambda L_{u}$
 whre **$\lambda$** is a hyperparameter adjusting both losses, $L_{s}$ is binary cross entropy supervised loss and $L_{u}$ is unsupervised consistency loss, we used KL divergence as a consistency loss, it helps in matching the mask similarity. Below is an image for Training procedure of SS Method.
 
 <!-- <Figure> -->
+
+
 
 
 *HYPERPARAMETERS:-*
@@ -64,80 +77,14 @@ After getting the mask we have to extract the monitor using that mask from input
 
 Below present an output from perspective transform
 
-<h4> Novel thing  - Choice of Size Selection</h4>
-
-One thing before moving forward is to see how we decided the optimum size for ocr and classification.
-
- - We generated masks for all unlabelled data and then found their corners and then 
- we stored the two dimension values of each masks in an array
- - then we draw a histogram of those dimension to see the volume covered by monitor on an average in unlabelled data
- - Below present the histogram of both data, based on this we decided to take the mean value of that histograms i.e. (360, 640) as (h, w) for classification
- - For ocr we switchhed between above dimension and (180, 320) based on the layout which was provided by classification.
-
-<!-- HISTOGRAM -->
-
-
-
-<h3> 3. Monitor Layout Classification</h3>
-
-<h4>- Approch</h4>
-
-Identifying the layout for further pipeline is very essential because no matter how many types of monitors you have if you fix the number of classes then the model tries to assign the input monitor to the best possible class from the available class, we used 4 given layout classes for classification, any input image which resembles closely to any class will be assigned that class and assumed it's layout to be the same as that class.
-
-We used resnet18 model for classification(it is light and gave around 99% validation accuracy),fine tuned it on our data.We used 80:20 ratio for train-val split(Stratified)
-
-<h4>- Training Setup</h4>
-In this section, we will present the fine-tuning training setup and parameters for our Resnet-18.
-
-We used cross-entropy loss function with stepLR scheduler of pytorch.
-Below are the training results.
-
 <!-- <Figure> -->
+<p align="center">
+<img height = "200" width = "325" src ="results/pipeline_imgs/ip1.png" />
+<img height = "200" width = "325" src ="results/pipeline_imgs/pt.png" /></br> <b>Left</b> - Original Image,  <b>Right</b> - Segmented and Perspective transformed image
+</p>
 
 
-*HYPERPARAMETERS:-*
-
-```
-LEARNING_RATE = 1e-4
-BATCH_SIZE = 16
-NUM_EPOCHS = 50
-IMAGE_HEIGHT = 360
-IMAGE_WIDTH = 640
-```
-
-
-<h4>- Inference Setup</h4>
-Inference section is provided in the notebook itself, we just have to perform preprocessing of normalization and then take the inference on cpu. It takes rougly 0.1-0.2 seconds for each inference on cpu.
-
-
-<h3> 4. OCR</h3>
-
-<h4>- Approch</h4>
-
-We used paddleocr, which is a fast, lightweight and open source detector+ocr model based on CRNN (Convolutional Recurrent Neural Network), we used it's fastest and recent version of PPOCR-v3, which runs considerably faster on cpu which achieving a good recognition accuracy.
-
-
-We used the input resolution dependent on the layout classification, FOr example layout which seems too crowded, we provided higher resolution of (360,640) and layout which have values apart we set their input ocr resolution to be (180, 320), our this trick helped in utilising layout information for achieving higher accuracy in extracting vitals
-
-Inference code for this model is one liner simple and provided in the notebook along with it's pip installation. It takes rougly 0.5-1 seconds for each inference on cpu. Higher time like 1 second usually accounts when we use layout of size (360, 640) otherwise till is generally less, and it also depends on the number of boxes detected by paddleocr, sometimes it detects more boxes so time goes on higher side like 1 seconds but generally it takes around 0.6-0.7 seconds in our pipeline.
-
-<!-- <May be figure> -->
-
-
-<h3> 4. Rules Checking</h3>
-
-<h4>- Approch</h4>
-
-We used the input resolution dependent on the layout classification, For example layout which seems too crowded, we provided higher resolution of (360,640) and layout which have values apart we set their input ocr resolution to be (180, 320), our this trick helped in utilising layout information for achieving higher accuracy in extracting vitals
-
-Inference code for this model is one liner simple and provided in the notebook along with it's pip installation. It takes rougly 0.5-1 seconds for each inference on cpu. Higher time like 1 second usually accounts when we use layout of size (360, 640) otherwise till is generally less, and it also depends on the number of boxes detected by paddleocr, sometimes it detects more boxes so time goes on higher side like 1 seconds but generally it takes around 0.6-0.7 seconds in our pipeline.
-
-For extracting vitals, we have used rule based method to rule out the boxes which are not required. We decided to make a class based approach where the vitals either have a specific location or value or color to a particular class. For example: `HR value` is obtained if size of bounding box is above a threshold value and is of green color as most of the classes have HR in green color. Similarly `SPO2` and `RR` is obtained if the text color is either cyan or yellow. Text color is determined by placing a mask of selected range of colors and then the number of pixels per area is calculated if the calculated ratio is above a threshold, we call the text color is of that color. `DBP` and `SBP` values are obtained in a different fashion. In every layout there is a `/` between the two values and we check if any bounding box contains that character. Usually two digit value to the right of `/` is `BBP` and two or three digit value to the left of `/` is `DBP`. 
-
-<!-- <May be figure> -->
-
-
-<h3> Vitals Detection</h3>
+<h3> 3. Vitals Detection</h3>
 
 <h4>- Approch</h4>
 
@@ -199,6 +146,63 @@ IMAGE_WIDTH = 640
 
 
 <h4>- Inference Setup</h4>
-Inference section is provided in the notebook itself. Preprocessing and normalization are done by the model itself. It takes rougly 50ms-100ms for each inference on cpu.
+Inference section is imported in the notebook itself. Preprocessing and normalization are done by the model itself. It takes rougly 50ms-100ms for each inference on cpu. Below present an example of Yolo-Extracted vitals.
+
+<p align="center">
+<img height = "200" width = "325" src ="results/pipeline_imgs/detector_io.jpg" />
+<img height = "200" width = "325" src ="results/pipeline_imgs/yolo_detection.png" /></br> <b>Left</b> - Perspective Transformed Image,  <b>Right</b> - Yolo Extracted Vitals and Graph
+</p>
+
+<h3> 4. OCR</h3>
+
+<h4>- Approch</h4>
+
+We used paddleocr, which is a fast, lightweight and open source detector+ocr model based on CRNN (Convolutional Recurrent Neural Network), we used it's fastest and recent version of PPOCR-v3, which runs considerably faster on cpu which achieving a good recognition accuracy.
+
+
+We used the input resolution dependent on the layout classification, FOr example layout which seems too crowded, we provided higher resolution of (360,640) and layout which have values apart we set their input ocr resolution to be (180, 320), our this trick helped in utilising layout information for achieving higher accuracy in extracting vitals
+
+Inference code for this model is one liner simple and imported in the notebook. It takes rougly 0.5-1 seconds for each inference on cpu. Higher time like 1 second usually accounts when we use layout of size (360, 640) otherwise till is generally less, and it also depends on the number of boxes detected by paddleocr, sometimes it detects more boxes so time goes on higher side like 1 seconds but generally it takes around 0.6-0.7 seconds in our pipeline.
+
+<!-- <May be figure> -->
+
+
+<h3> Novelty </h3>
+
+- In terms of Speed:-
+
+    * We peformed multiprocessing during ocr recogntion for yolo extracted bounding box vitals. We used multiprocess library of python. It boosted speed of net recognition by 2.5X. Originally sequential ocr of each vital taking around 0.4-0.5 seconds which dropped down to 0.15-0.2 sec **(Significant boost in speed)**
+
+    * We have used yolov5 nano for direct extraction of vitals, it is  very fast on cpu as well
+
+    * Carefully choose input size based on the masks area in net image. We plotted histogram of both dimensions of extracted masks for finding the optimal dimension for yolo and able to get the image size as around (384,640) half from original size of (720, 1280). Our this variation lowered the latency while achieving same accuracy. Below presents the histogram of both dimensions of masks
+
+- In terms of accuracy:-
+
+   * We done post-processing on the predicted results based on some montior layout info.
+    For Ex - 
+       1. SBP and DBP always comes together in fashion like "SBP/DBP".
+       2. HR Graph and HR always are neared compared to any other graph type.
+       3. Along with this we selected highest confidence bbox vitals, if multiple predictions for a vital is done.
+
+   * We used segmentation instead of detection for monitor extraction as most of the monitors have a quadrilateral shape instead of rectangular which motivated the use of segmentation at pixel level and we used semi-supervised based segmentation appraoch to leverage unlabelled data
+
+
+
+
+
+
+<h3> Folders Structure and Code Info</h3>
+
+```tree
+
+|- 
+|-  
+|-
+|
+|
+```
+
+
 
 
