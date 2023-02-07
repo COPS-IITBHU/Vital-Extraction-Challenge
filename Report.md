@@ -44,10 +44,11 @@ DECAY_FACTOR = 0.9
 It is recommended to use a bigger batch size for unsupervised image compared to supervised, we used a low learning rate to allow model to converge slowly keeping info of imagenet params, used loss factor lambda as 0.3, and learning rate decay factor as 0.3. We used image shape almost half compared to original size for segmentation. We done this and then upsampled the mask to original size because the monitor ha a nice geometrical shape which allowed easy resizing of mask.
 We saved the model based on mIOU (mean Intersection over union score) on validation. Set 1800 labelled to train and 200 labelled to validation.
 
-Plot for MIOU score is below:- 
+Plot for loss and MIOU score is below:- 
 <!-- UDA UNET miou figure -->
 <p align="center">
-<img height = "300" width = "500" src ="https://user-images.githubusercontent.com/60649720/216918754-f9f96b74-0535-491f-bcf3-7413d1e748fd.png" />
+<img height = "320" width = "325" src ="results/train_imgs/uda_unet_loss.png" />
+<img height = "320" width = "325" src ="results/train_imgs/uda_unet_loss.png" />
 </p>
 
 
@@ -146,7 +147,7 @@ So, finally to find the bounding boxes, we used **YOLOv5nano**. It is lightweigh
 <!-- YOLO models comparison figures -->
 Comparison of different YOLOv5 models:
 <p align="center">
-<img height = "300" width = "500" src ="yolo_model_plot.png" />
+<img height = "300" width = "500" src ="results/train_imgs/yolo_model_plot.png" />
 </p>
 
 
