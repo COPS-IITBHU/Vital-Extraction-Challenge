@@ -3,7 +3,7 @@ from torch.utils.data import DataLoader
 import os
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
-from utils import randAugment
+from utilities import randAugment
 from torch.utils.data import Dataset
 
 class SegmentationDataset(Dataset):
