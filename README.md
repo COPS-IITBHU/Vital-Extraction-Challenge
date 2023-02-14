@@ -1,7 +1,7 @@
-<h1 align="center">Report</h1>
+<h1 align="center">Vital Extraction Challenge</h1>
 
 <h2>Abstract</h2>
-<p>Cloudphysician is a company that focuses on AI integration in the Healthcare system. In hospital the monitor shows vital informations about the patient. To integrate AI with the system we need to get the informations about the vitals from the monitor. In our approach we have processed the monitor images to extract the vital informations. We have used semi-supervised segmentation technique for extracting the monitor from complete image and then transformed the extracted monitor in birds-eye perspective. Finally we used <b>YOLOv5-nano</b> for vital extractions from monitor and Paddle-OCR as an open-source character recognition tool. For increasing the vital extraction accuracy, we used some monitor layout knowledge for post-processing the predicted results. <b>Our complete pipeline takes about 0.6-1.0 second for inference on CPU.</b>
+<p>This Repository Contains our solution to address the problem statement proposed by Cloudphysician. It's a company that focuses on AI integration in the Healthcare system. In hospital the monitor shows vital informations about the patient. To integrate AI with the system we need to get the informations about the vitals from the monitor. In our approach we have processed the monitor images to extract the vital informations. We have used semi-supervised segmentation technique for extracting the monitor from complete image and then transformed the extracted monitor in birds-eye perspective. Finally we used <b>YOLOv5-nano</b> for vital extractions from monitor and Paddle-OCR as an open-source character recognition tool. For increasing the vital extraction accuracy, we used some monitor layout knowledge for post-processing the predicted results. <b>Our complete pipeline takes about 0.6-1.0 second for inference on CPU.</b>
 </p>
 
 <p>
@@ -11,7 +11,7 @@
 Below is a figure depicting our pipleine from a higher level
 
 <!-- Figure here -->
-<img src ="results/pipeline_imgs/model_pipeline.unknown.drawio.png" />
+<img src ="assets/pipeline_imgs/model_pipeline.unknown.drawio.png" />
 
 
 
@@ -27,7 +27,7 @@ Below are some images which show the better mask generation of Semi-Supervised A
 
 <!-- Figures of Comparison-->
 <p align="center">
-<img src ="results/pipeline_imgs/seg.jpeg" />
+<img src ="assets/pipeline_imgs/seg.jpeg" />
 </p>
 
 
@@ -62,8 +62,8 @@ We have saved the model based on mIOU (mean Intersection over union score) on va
 Plot for loss and mIOU score is below:- 
 <!-- UDA UNET miou figure -->
 <p align="center">
-<img height = "320" width = "325" src ="results/train_imgs/uda_unet_loss.png" />
-<img height = "320" width = "325" src ="results/train_imgs/uda_unet_loss.png" />
+<img height = "320" width = "325" src ="assets/train_imgs/uda_unet_loss.png" />
+<img height = "320" width = "325" src ="assets/train_imgs/uda_unet_loss.png" />
 </p>
 
 
@@ -81,8 +81,8 @@ Figure below presents an output from perspective transform
 
 <!-- <Figure> -->
 <p align="center">
-<img height = "200" width = "325" src ="results/pipeline_imgs/ip1.png" />
-<img height = "200" width = "325" src ="results/pipeline_imgs/pt.png" /></br> <b>Left</b> - Original Image,  <b>Right</b> - Segmented and Perspective transformed image
+<img height = "200" width = "325" src ="assets/pipeline_imgs/ip1.png" />
+<img height = "200" width = "325" src ="assets/pipeline_imgs/pt.png" /></br> <b>Left</b> - Original Image,  <b>Right</b> - Segmented and Perspective transformed image
 </p>
 
 
@@ -96,7 +96,7 @@ So, finally to find the bounding boxes, we used **YOLOv5nano**. It is lightweigh
 <!-- YOLO models comparison figures -->
 Comparison of different YOLOv5 models:
 <p align="center">
-<img height = "300" width = "500" src ="results/train_imgs/yolo_model_plot.png" />
+<img height = "300" width = "500" src ="assets/train_imgs/yolo_model_plot.png" />
 </p>
 
 
@@ -149,7 +149,7 @@ IMAGE_WIDTH = 640
 Training results for yolo is summarised in the following figure
 
 <p align="center">
-<img height = "300" width = "800" src ="results/train_imgs/yolo_met.jpeg" />
+<img height = "300" width = "800" src ="assets/train_imgs/yolo_met.jpeg" />
 </p>
 
 
@@ -158,23 +158,24 @@ Training results for yolo is summarised in the following figure
 Inference section is imported in the notebook itself. Preprocessing and normalization are done by the model itself. It takes rougly 50ms-100ms for each inference on CPU. Below present an example of Yolo-Extracted vitals.
 
 <p align="center">
-<img height = "200" width = "325" src ="results/pipeline_imgs/detector_io.jpg" />
-<img height = "200" width = "325" src ="results/pipeline_imgs/yolo_detection.png" /></br> <b>Left</b> - Perspective Transformed Image,  <b>Right</b> - Yolo Extracted Vitals and Graph
+<img height = "200" width = "325" src ="assets/pipeline_imgs/detector_io.jpg" />
+<img height = "200" width = "325" src ="assets/pipeline_imgs/yolo_detection.png" /></br> 
+<b>Left</b> - Perspective Transformed Image,  <b>Right</b> - Yolo Extracted Vitals and Graph
 </p>
 
 <h3> 4. OCR</h3>
 
 <h4>- Approach</h4>
 
-We have used Paddle OCR, which is a fast, lightweight and open source detector + OCR model based on CRNN (Convolutional Recurrent Neural Network), we used it's fastest and recent version of PPOCR-v3, which runs considerably faster on CPU which achieved a good recognition accuracy.
+We have used Paddle OCR, which is a fast, lightweight and open source detector + OCR model based on CRNN (Convolutional Recurrent Neural Network), we used it's fastest and recent version of PPOCR-v3 and used it for recognition part only as it runs considerably faster on CPU while maintaining a good recognition accuracy.
 
+Inference code for this model is one linear simple and imported in the notebook. It takes roughly 0.4-0.5 seconds for inference of all detected bounding box on CPU. After implementing multithreading on top of it, we took it's inference time to around 0.15-0.2 seconds for all detected bounding boxes.
 
-We used the input resolution dependent on the layout classification, For example layout which seems too crowded, we provided higher resolution of (360,640) and layout which have values apart we set their input OCR resolution to be (180, 320), this trick of ours helped in utilising layout information for achieving higher accuracy in extracting vitals.
+<h3> 5. HR-Graph Digitization </h3>
 
-Inference code for this model is one linear simple and imported in the notebook. It takes roughly 0.5-1 seconds for each inference on CPU. Higher time like 1 second usually accounts when we use layout of size (360, 640) otherwise it is generally less, and it also depends on the number of boxes detected by PaddleOCR, sometimes when it detects more boxes it may take 1 second but generally it takes around 0.6-0.7 seconds in our pipeline.
+Our key feature of our pipeline is that we able to extract HR-Graph as well. For this purpose, we used WebPlotDigitizer library and modified it to fit our use case, Our modification made it to handle text and other noises present within the text. Below presents an image which clearly showcases the digitization.
 
-<!-- <May be figure> -->
-
+<img src ="assets/HR_digitize.png" /></br>
 
 <h2> Novelty </h2>
 
@@ -186,7 +187,7 @@ Inference code for this model is one linear simple and imported in the notebook.
 
     * Carefully chosen input size based on the masks area in net image. We plotted histogram of both dimensions of extracted masks for finding the optimal dimension for Yolo and able to get the image size as around (384, 640) half of original size of (720, 1280). Our this variation lowered the latency while achieving same accuracy. Below presents the histogram of both dimensions of masks
     <p align="center">
-    <img width = 500 height = 500 src ="results/pipeline_imgs/hist.jpeg" />
+    <img width = 500 height = 500 src ="assets/pipeline_imgs/hist.jpeg" />
     </p>
 
 - In terms of accuracy:-
@@ -206,7 +207,7 @@ Inference code for this model is one linear simple and imported in the notebook.
    An example of visualisation of our results is given below.
 
 <p align="center">
-    <img src ="results/pipeline_imgs/gradio.png" />
+    <img src ="assets/pipeline_imgs/gradio.png" />
 </p>
 
 <h3> Folders Structure and Code Info</h3>
@@ -223,8 +224,8 @@ Inference code for this model is one linear simple and imported in the notebook.
 
  - notebooks/
     all train and inference codes which we used anywhere but in notebooks format.
- - results/
-    all results here
+ - assets/
+    contains presentation pdf, results figures, and other pipeline images
  - yolov5nall/
     this folder contains YOLOv5 related all codes
  - weights/
